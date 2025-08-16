@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client Dashboard</title>
+</head>
+<body>
+    <h1>Client Account</h1>
+    <p><strong>Client Name:</strong> <span id="client-name">John Doe</span></p>
+    <p><strong>Account Number:</strong> <span id="account-number">123456789</span></p>
+    <p><strong>Balance:</strong> $<span id="balance">1000.00</span></p>
+    <p><strong>Status:</strong> <span id="status">Verified</span></p>
+
+    <h2>Transactions</h2>
+    <form id="transaction-form">
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" step="0.01" min="0.01">
+        <button type="button" id="deposit-btn">Deposit</button>
+        <button type="button" id="withdraw-btn">Withdraw</button>
+        <button type="button" id="transfer-btn">Transfer</button>
+    </form>
+
+    <h2>Admin Actions</h2>
+    <button id="verify-btn">Verify</button>
+    <button id="suspend-btn">Suspend</button>
+    <button id="close-btn">Close</button>
+    <button id="appeal-btn">Appeal</button>
+
+    <h2>Statement</h2>
+    <button id="statement-btn">View Statement</button>
+
+    <div id="notification"></div>
+
+    <script>
+        // Mock data and functions for demonstration
+        let account = {
+            name: "John Doe",
+            number: "123456789",
+            balance: 1000.00,
+            status: "Verified"
+        };
+
+        document.getElementById("client-name").innerText = account.name;
+        document.getElementById("account-number").innerText = account.number;
+        document.getElementById("balance").innerText = account.balance.toFixed(2);
+        document.getElementById("status").innerText = account.status;
+
+        const notification = document.getElementById("notification");
+
+        document.getElementById("deposit-btn").addEventListener("click", () => {
+            const amount = parseFloat(document.getElementById("amount").value);
+            if (account.status !== "Closed" && amount > 0) {
+                account.balance += amount;
+                document.getElementById("balance").innerText = account.balance.toFixed(2);
+                notification.innerText = "Deposit successful.";
+            } else {
+                notification.innerText = "Deposit failed.";
+            }
+        });
+
+        document.getElementById("withdraw-btn").addEventListener("click", () => {
+            const amount = parseFloat(document.getElementById("amount").value);
+            if (account.status === "Verified" && amount > 0 && amount <= account.balance) {
+                account.balance -= amount;
+                document.getElementById("balance").innerText = account.balance.toFixed(2);
+                notification.innerText = "Withdrawal successful.";
+            } else {
+                notification.innerText = "Withdrawal failed.";
+            }
+        });
+
+        document.getElementById("verify-btn").addEventListener("click", () => {
+            account.status = "Verified";
+            document.getElementById("status").innerText = account.status;
+        });
+
+        document.getElementById("suspend-btn").addEventListener("click", () => {
+            account.status = "Suspended";
+            document.getElementById("status").innerText = account.status;
+        });
+
+        document.getElementById("close-btn").addEventListener("click", () => {
+            account.status = "Closed";
+            document.getElementById("status").innerText = account.status;
+        });
+
+        document.getElementById("appeal-btn").addEventListener("click", () => {
+            if (account.status === "Suspended") {
+                account.status = "Verified";
+                document.getElementById("status").innerText = account.status;
+            }
+        });
+
+    </script>
+</body>
+</html>

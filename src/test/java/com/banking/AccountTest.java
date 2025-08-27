@@ -1,6 +1,7 @@
 package com.banking;
 
 import com.banking.model.Account;
+import com.banking.service.CreditScoreService;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -76,5 +77,11 @@ public class AccountTest {
         Account account = new Account(1000, "Closed");
         assertFalse(account.withdraw(100));
         assertEquals(1000, account.getBalance(), 0.001);
+    }
+    @Test
+    public void testGetCreditScore() {
+        CreditScoreService service = new CreditScoreService();
+        int score = service.getCreditScore("123456789");
+        assertTrue(score >= 300 && score <= 850);
     }
 }

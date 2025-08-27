@@ -1,95 +1,472 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Client Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .account-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 1.3rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .balance {
+            color: #28a745;
+            font-size: 1.5rem !important;
+        }
+
+        .status-verified {
+            color: #28a745;
+        }
+
+        .status-suspended {
+            color: #dc3545;
+        }
+
+        .status-closed {
+            color: #6c757d;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: white;
+            color: #333;
+            padding: 16px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            border-left: 4px solid #667eea;
+            min-width: 300px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: #28a745;
+        }
+
+        .toast.error {
+            border-left-color: #dc3545;
+        }
+
+        .toast.warning {
+            border-left-color: #ffc107;
+        }
+
+        .toast.info {
+            border-left-color: #17a2b8;
+        }
+
+        .toast-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .toast-message {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Flash Message Styling */
+        .flash-message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideIn 0.5s ease;
+        }
+
+        .flash-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .flash-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Client Account</h1>
-    <p><strong>Client Name:</strong> <span id="client-name">John Doe</span></p>
-    <p><strong>Account Number:</strong> <span id="account-number">123456789</span></p>
-    <p><strong>Balance:</strong> $<span id="balance">1000.00</span></p>
-    <p><strong>Status:</strong> <span id="status">Verified</span></p>
+<div class="container">
+    <div class="header">
+        <h1>🏦 Banking Dashboard</h1>
+        <div class="subtitle">Welcome to your secure banking portal</div>
+    </div>
 
-    <h2>Transactions</h2>
-    <form id="transaction-form">
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" step="0.01" min="0.01">
-        <button type="button" id="deposit-btn">Deposit</button>
-        <button type="button" id="withdraw-btn">Withdraw</button>
-        <button type="button" id="transfer-btn">Transfer</button>
-    </form>
+    <!-- Flash Messages -->
+    <div th:if="${message}" th:class="'flash-message ' + ${messageType}" th:text="${message}"></div>
 
-    <h2>Admin Actions</h2>
-    <button id="verify-btn">Verify</button>
-    <button id="suspend-btn">Suspend</button>
-    <button id="close-btn">Close</button>
-    <button id="appeal-btn">Appeal</button>
+    <div class="dashboard-grid">
+        <!-- Account Information Card -->
+        <div class="card">
+            <h2>Account Information</h2>
+            <div class="account-info">
+                <div class="info-item">
+                    <div class="info-label">Client Name</div>
+                    <div class="info-value" th:text="${account.name}">John Doe</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Account Number</div>
+                    <div class="info-value" th:text="${account.number}">123456789</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Balance</div>
+                    <div class="info-value balance" th:text="'$' + ${#numbers.formatDecimal(account.balance, 1, 2)}">$1000.00</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value" id="account-status" th:text="${account.status}" th:class="'info-value status-' + ${#strings.toLowerCase(account.status)}">Verified</div>
+                </div>
+            </div>
+        </div>
 
-    <h2>Statement</h2>
-    <button id="statement-btn">View Statement</button>
+        <!-- Transactions Card -->
+        <div class="card">
+            <h2>Transactions</h2>
+            <form action="/deposit" method="post" style="margin-bottom: 15px;">
+                <div class="form-group">
+                    <label for="deposit-amount">Amount ($)</label>
+                    <input type="number" id="deposit-amount" name="amount" step="0.01" min="0.01" placeholder="Enter amount" required>
+                </div>
+                <button type="submit" class="btn btn-success">💰 Deposit</button>
+            </form>
 
-    <div id="notification"></div>
+            <form action="/withdraw" method="post">
+                <div class="form-group">
+                    <label for="withdraw-amount">Amount ($)</label>
+                    <input type="number" id="withdraw-amount" name="amount" step="0.01" min="0.01" placeholder="Enter amount" required>
+                </div>
+                <button type="submit" class="btn btn-primary">💸 Withdraw</button>
+            </form>
+        </div>
 
-    <script>
-        // Mock data and functions for demonstration
-        let account = {
-            name: "John Doe",
-            number: "123456789",
-            balance: 1000.00,
-            status: "Verified"
+        <!-- Admin Actions Card -->
+        <div class="card">
+            <h2>Account Management</h2>
+            <div class="button-group">
+                <form action="/verify" method="post" style="flex: 1;">
+                    <button type="submit" class="btn btn-success">✅ Verify</button>
+                </form>
+                <form action="/suspend" method="post" style="flex: 1;">
+                    <button type="submit" class="btn btn-warning">⏸️ Suspend</button>
+                </form>
+                <form action="/close" method="post" style="flex: 1;">
+                    <button type="submit" class="btn btn-danger">❌ Close</button>
+                </form>
+                <form action="/appeal" method="post" style="flex: 1;">
+                    <button type="submit" class="btn btn-primary">📝 Appeal</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Additional Services Card -->
+        <div class="card">
+            <h2>Services</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="alert('Statement feature coming soon!')">📊 View Statement</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+    // Show toast notification when page loads with flash message
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.querySelector('.flash-message');
+        if (flashMessage) {
+            const message = flashMessage.textContent;
+            const messageType = flashMessage.className.includes('success') ? 'success' :
+                flashMessage.className.includes('error') ? 'error' :
+                    flashMessage.className.includes('warning') ? 'warning' : 'info';
+
+            showToast(message, messageType);
+
+            // Remove flash message after showing toast
+            setTimeout(() => {
+                flashMessage.remove();
+            }, 100);
+        }
+    });
+
+    // Toast notification system
+    function showToast(message, type = "info", duration = 4000) {
+        const toastContainer = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            success: "✅",
+            error: "❌",
+            warning: "⚠️",
+            info: "ℹ️"
         };
 
-        document.getElementById("client-name").innerText = account.name;
-        document.getElementById("account-number").innerText = account.number;
-        document.getElementById("balance").innerText = account.balance.toFixed(2);
-        document.getElementById("status").innerText = account.status;
+        toast.innerHTML = `
+                <div class="toast-header">
+                    <span class="toast-title">${icons[type]} ${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                    <button class="toast-close">&times;</button>
+                </div>
+                <div class="toast-message">${message}</div>
+            `;
 
-        const notification = document.getElementById("notification");
+        toastContainer.appendChild(toast);
 
-        document.getElementById("deposit-btn").addEventListener("click", () => {
-            const amount = parseFloat(document.getElementById("amount").value);
-            if (account.status !== "Closed" && amount > 0) {
-                account.balance += amount;
-                document.getElementById("balance").innerText = account.balance.toFixed(2);
-                notification.innerText = "Deposit successful.";
-            } else {
-                notification.innerText = "Deposit failed.";
+        // Show toast
+        setTimeout(() => toast.classList.add("show"), 100);
+
+        // Close button functionality
+        const closeBtn = toast.querySelector(".toast-close");
+        closeBtn.addEventListener("click", () => removeToast(toast));
+
+        // Auto-remove after duration
+        setTimeout(() => removeToast(toast), duration);
+    }
+
+    function removeToast(toast) {
+        toast.classList.remove("show");
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
             }
-        });
-
-        document.getElementById("withdraw-btn").addEventListener("click", () => {
-            const amount = parseFloat(document.getElementById("amount").value);
-            if (account.status === "Verified" && amount > 0 && amount <= account.balance) {
-                account.balance -= amount;
-                document.getElementById("balance").innerText = account.balance.toFixed(2);
-                notification.innerText = "Withdrawal successful.";
-            } else {
-                notification.innerText = "Withdrawal failed.";
-            }
-        });
-
-        document.getElementById("verify-btn").addEventListener("click", () => {
-            account.status = "Verified";
-            document.getElementById("status").innerText = account.status;
-        });
-
-        document.getElementById("suspend-btn").addEventListener("click", () => {
-            account.status = "Suspended";
-            document.getElementById("status").innerText = account.status;
-        });
-
-        document.getElementById("close-btn").addEventListener("click", () => {
-            account.status = "Closed";
-            document.getElementById("status").innerText = account.status;
-        });
-
-        document.getElementById("appeal-btn").addEventListener("click", () => {
-            if (account.status === "Suspended") {
-                account.status = "Verified";
-                document.getElementById("status").innerText = account.status;
-            }
-        });
-
-    </script>
+        }, 300);
+    }
+</script>
 </body>
 </html>

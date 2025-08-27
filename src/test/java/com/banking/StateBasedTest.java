@@ -40,4 +40,31 @@ public class StateBasedTest {
         assertFalse(account.withdraw(100));
         assertFalse(account.deposit(100));
     }
+    @Test
+    public void testInvalidTransitions() {
+        AccountService service = new AccountService();
+
+        Account account = new Account(500, "Unverified");
+        service.suspendAccount(account);
+        assertEquals("Unverified", account.getStatus()); // should not change
+
+        service.closeAccount(account);
+        assertEquals("Unverified", account.getStatus()); // still no change
+
+        service.appealSuspension(account);
+        assertEquals("Unverified", account.getStatus()); // still no change
+
+        // Go to verified, then close
+        service.verifyAccount(account);
+        assertEquals("Verified", account.getStatus());
+        service.closeAccount(account);
+        assertEquals("Closed", account.getStatus());
+
+        // Try invalid transitions from closed
+        service.verifyAccount(account);
+        assertEquals("Closed", account.getStatus());
+
+        service.appealSuspension(account);
+        assertEquals("Closed", account.getStatus());
+    }
 }

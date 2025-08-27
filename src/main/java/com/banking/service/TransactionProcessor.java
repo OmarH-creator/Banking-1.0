@@ -1,7 +1,9 @@
 package com.banking.service;
 
 import com.banking.model.Account;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TransactionProcessor {
     public boolean deposit(Account account, double amount) {
         return account.deposit(amount);
